@@ -1,4 +1,3 @@
-// setup
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -12,12 +11,12 @@ const gridSpacing = 250;
 
 
 
-//lights 
+
 class TrafficLight{
     constructor(x,y){
         this.x = x;
         this.y = y;
-        this.state = "green"; // green, yellow, red
+        this.state = "green"; 
 
     }
 
@@ -33,7 +32,7 @@ class TrafficLight{
      }
 }
 
-// blueprint
+
 class Car{
     
     constructor(x, y, lane, type= "civilian"){
@@ -149,8 +148,6 @@ function setupLights(){
 }
 setupLights();
 
-
-// list of cars
 let cars = [];
 function spawnCar(){
    const isAmbulance = Math.random() < 0.2;
@@ -176,7 +173,6 @@ function dynamicSpawner(){
 }
 dynamicSpawner();
 
-// word city 
 function drawCity(){
     let intensity = Math.min(livesSaved * 5, 100);
     ctx.shadowBlur = 10 + (intensity / 5);
@@ -194,7 +190,7 @@ function drawCity(){
         ctx.fillRect(0, y - roadWidth/2, canvas.width, roadWidth);
     }
 
-    //vertical road on the or through the y axis 
+    
     for (let x = gridSpacing/2; x < canvas.width; x += gridSpacing){
         ctx.fillRect(x - roadWidth/2, 0, roadWidth, canvas.height);
     }
@@ -226,15 +222,15 @@ function gameLoop(){
         car.move();
         car.draw();
 
-        // 1. COLLISION SENSOR
+
         cars.forEach((otherCar) =>{
             if (car !== otherCar && car.lane !== otherCar.lane){
                 const dist = Math.hypot(car.x - otherCar.x, car.y - otherCar.y);
                 if (dist < 30){
                     efficiency -= 0.5;
-                    car.color = "#ff8800"; // Orange for crash
+                    car.color = "#ff8800"; 
                     car.speed = 1;     
-                    screenShake = 10;    // Slow down the crashed cars
+                    screenShake = 10;  
                 }
             }
         });
@@ -244,14 +240,12 @@ function gameLoop(){
         }
     });
 
-    // 2. CLEANUP (Do this after the loop so it doesn't break the sensors)
     cars = cars.filter(car => {
         const offScreen = car.x > canvas.width + 50 || car.x < -50 || car.y > canvas.height + 50 || car.y < -50;
         if (offScreen && car.type === "ambulance") livesSaved++;
         return !offScreen;
     });
 
-    // 3. SCORE LOGIC
     if (stoppedCount > 0){
         let patienceLevel = 0.01 + (livesSaved  * 0.001);
         efficiency -= patienceLevel * stoppedCount;
@@ -264,7 +258,6 @@ function gameLoop(){
     document.getElementById("score").innerText = Math.floor(efficiency) + "%";
     document.getElementById("timer").innerText = livesSaved;
 
-    // 4. GAME OVER
     if (efficiency <= 0){
         ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -316,10 +309,3 @@ window.addEventListener("mousedown", (event) =>{
         }
     });
 });
-
-// this is the final game code which ended here
-// in this the blue cars represent civilian cars and the red cars represent ambulances
-// the player has to manage the traffic lights to ensure ambulances can pass through without delay while minimizing the waiting time of civilian cars to maintain high efficiency.
-// as the player saves more ambulances the game becomes progressively harder by increasing the speed of cars and reducing the spawn delay.
-// the game ends when the efficiency drops to zero, indicating a complete traffic deadlock.
-
