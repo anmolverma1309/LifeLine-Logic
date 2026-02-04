@@ -1,18 +1,18 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-let efficiency = 100;
-let screenShake = 0;
-let livesSaved = 0;
+const mapRoad = document.getElementById("gameCanvas");
+const ctx = mapRoad.getContext("2d");
+mapRoad.width = window.innerWidth;
+mapRoad.height = window.innerHeight;
+let Suitable_for_Ambulance = 100;
+let shakingEffect = 0;
+let peoplereachedhospital = 0;
 
-const roadWidth = 80;
+const breadth = 80;
 const gridSpacing = 250;
 
 
 
 
-class TrafficLight{
+class lightings{
     constructor(x,y){
         this.x = x;
         this.y = y;
@@ -33,14 +33,14 @@ class TrafficLight{
 }
 
 
-class Car{
+class people{
     
     constructor(x, y, lane, type= "civilian"){
         this.x = x;
         this.y = y;
         this.lane = lane;
         this.type = type;
-        let speedMultiplier = 1 + (livesSaved * 0.02);
+        let speedMultiplier = 1 + (peoplereachedhospital * 0.02);
 
         this.speed = (type === "ambulance" ? 3.5 : 2.2) * speedMultiplier;
         this.speed = Math.min (this.speed, 6);
@@ -106,7 +106,7 @@ class Car{
             });
         }
 
-        cars.forEach(otherCar => {
+        peoples.forEach(otherCar => {
             if (this === otherCar) return;
 
             if (this.lane === otherCar.lane){
@@ -140,32 +140,32 @@ class Car{
 let lights = [];
 function setupLights(){
     lights = [];
-    for (let x = gridSpacing/2; x <canvas.width; x += gridSpacing){
-        for (let y = gridSpacing/2; y < canvas.height; y += gridSpacing){
-            lights.push (new TrafficLight(x,y));
+    for (let x = gridSpacing/2; x <mapRoad.width; x += gridSpacing){
+        for (let y = gridSpacing/2; y < mapRoad.height; y += gridSpacing){
+            lights.push (new lightings(x,y));
         }
     }
 }
 setupLights();
 
-let cars = [];
+let peoples = [];
 function spawnCar(){
    const isAmbulance = Math.random() < 0.2;
    const type = isAmbulance ? "ambulance" : "civilian";
    if (Math.random() > 0.5){
-    let randomY = (Math.floor(Math.random() * (canvas.height / gridSpacing)))* gridSpacing + gridSpacing/2;
-    cars.push(new Car(0, randomY, "horizontal", type));
+    let randomY = (Math.floor(Math.random() * (mapRoad.height / gridSpacing)))* gridSpacing + gridSpacing/2;
+    peoples.push(new people(0, randomY, "horizontal", type));
 
    }else{
-    let randomX = (Math.floor(Math.random() * (canvas.width / gridSpacing))) * gridSpacing + gridSpacing/2;
-    cars.push (new Car (randomX, 0 , "vertical", type));
+    let randomX = (Math.floor(Math.random() * (mapRoad.width / gridSpacing))) * gridSpacing + gridSpacing/2;
+    peoples.push (new people (randomX, 0 , "vertical", type));
    }
 }
 
 function dynamicSpawner(){
     spawnCar();
     let baseDelay = 2200;
-    let reduction = livesSaved * 60;
+    let reduction = peoplereachedhospital * 60;
     let finalDelay = Math.max(800, baseDelay - reduction);
 
     setTimeout(dynamicSpawner, finalDelay);
@@ -174,11 +174,11 @@ function dynamicSpawner(){
 dynamicSpawner();
 
 function drawCity(){
-    let intensity = Math.min(livesSaved * 5, 100);
+    let intensity = Math.min(peoplereachedhospital * 5, 100);
     ctx.shadowBlur = 10 + (intensity / 5);
     ctx.shadowColor = `hsl (180, 100%, ${50 + (intensity / 4)}%)`;
     ctx.fillStyle = "rgba(18, 18, 18, 0.4)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, mapRoad.width, mapRoad.height);
 
     ctx.save();
     ctx.shadowBlur = 15;
@@ -186,51 +186,51 @@ function drawCity(){
 
     ctx.fillStyle = "#2a2a2a";
 
-    for (let y = gridSpacing/2; y < canvas.height; y += gridSpacing){
-        ctx.fillRect(0, y - roadWidth/2, canvas.width, roadWidth);
+    for (let y = gridSpacing/2; y < mapRoad.height; y += gridSpacing){
+        ctx.fillRect(0, y - breadth/2, mapRoad.width, breadth);
     }
 
     
-    for (let x = gridSpacing/2; x < canvas.width; x += gridSpacing){
-        ctx.fillRect(x - roadWidth/2, 0, roadWidth, canvas.height);
+    for (let x = gridSpacing/2; x < mapRoad.width; x += gridSpacing){
+        ctx.fillRect(x - breadth/2, 0, breadth, mapRoad.height);
     }
     ctx.restore();
 }
 
 
-function gameLoop(){
+function gaminglogic(){
     ctx.save();
-    if (screenShake > 0){
-        ctx.translate(Math.random() * screenShake - screenShake / 2, Math.random() * screenShake - screenShake / 2);
-        screenShake *= 0.9;
-        if (screenShake < 0.5) screenShake = 0;
+    if (shakingEffect > 0){
+        ctx.translate(Math.random() * shakingEffect - shakingEffect / 2, Math.random() * shakingEffect - shakingEffect / 2);
+        shakingEffect *= 0.9;
+        if (shakingEffect < 0.5) shakingEffect = 0;
     }
     drawCity();
 
-    const ambulancePresent = cars.some(car => car.type === "ambulance");
+    const ambulancePresent = peoples.some(car => car.type === "ambulance");
     if (ambulancePresent){
         ctx.strokeStyle = "rgba(255, 0, 0, 0.4)";
         ctx.lineWidth = 20;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeRect(0, 0, mapRoad.width, mapRoad.height);
     }
 
     lights.forEach(l => l.draw());
 
     let stoppedCount = 0;
 
-    cars.forEach((car) => {
+    peoples.forEach((car) => {
         car.move();
         car.draw();
 
 
-        cars.forEach((otherCar) =>{
+        peoples.forEach((otherCar) =>{
             if (car !== otherCar && car.lane !== otherCar.lane){
                 const dist = Math.hypot(car.x - otherCar.x, car.y - otherCar.y);
                 if (dist < 30){
-                    efficiency -= 0.5;
+                    Suitable_for_Ambulance -= 0.5;
                     car.color = "#ff8800"; 
                     car.speed = 1;     
-                    screenShake = 10;  
+                    shakingEffect = 10;  
                 }
             }
         });
@@ -240,66 +240,66 @@ function gameLoop(){
         }
     });
 
-    cars = cars.filter(car => {
-        const offScreen = car.x > canvas.width + 50 || car.x < -50 || car.y > canvas.height + 50 || car.y < -50;
-        if (offScreen && car.type === "ambulance") livesSaved++;
+    peoples = peoples.filter(car => {
+        const offScreen = car.x > mapRoad.width + 50 || car.x < -50 || car.y > mapRoad.height + 50 || car.y < -50;
+        if (offScreen && car.type === "ambulance") peoplereachedhospital++;
         return !offScreen;
     });
 
     if (stoppedCount > 0){
-        let patienceLevel = 0.01 + (livesSaved  * 0.001);
-        efficiency -= patienceLevel * stoppedCount;
+        let patienceLevel = 0.01 + (peoplereachedhospital  * 0.001);
+        Suitable_for_Ambulance -= patienceLevel * stoppedCount;
         
     } else {
-        efficiency += 0.01;
+        Suitable_for_Ambulance += 0.01;
     }
     
-    efficiency = Math.max(0, Math.min(100, efficiency));
-    document.getElementById("score").innerText = Math.floor(efficiency) + "%";
-    document.getElementById("timer").innerText = livesSaved;
+    Suitable_for_Ambulance = Math.max(0, Math.min(100, Suitable_for_Ambulance));
+    document.getElementById("score").innerText = Math.floor(Suitable_for_Ambulance) + "%";
+    document.getElementById("timer").innerText = peoplereachedhospital;
 
-    if (efficiency <= 0){
+    if (Suitable_for_Ambulance <= 0){
         ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, mapRoad.width, mapRoad.height);
 
         let highScore = localStorage.getItem("trafficHighScore")  || 0;
-        if (livesSaved > highScore){
-            localStorage.setItem("trafficHighScore", livesSaved);
-            highScore = livesSaved;
+        if (peoplereachedhospital > highScore){
+            localStorage.setItem("trafficHighScore", peoplereachedhospital);
+            highScore = peoplereachedhospital;
         }
         ctx.fillStyle = "white";
         ctx.font = "48px Orbitron";
         ctx.textAlign = "center";
-        ctx.fillText("City Deadlock", canvas.width / 2, canvas.height / 2);
+        ctx.fillText("City Deadlock", mapRoad.width / 2, mapRoad.height / 2);
         ctx.font = "24px Arial";
 
-        ctx.fillText("Lives Saved:" + livesSaved, canvas.width / 2, canvas.height / 2 +30);
-        ctx.fillStyle = "00ffcc";
-        ctx.fillText("Best Record: " + highScore, canvas.width / 2, canvas.height / 2 + 70);
+        ctx.fillText("Lives Saved:" + peoplereachedhospital, mapRoad.width / 2, mapRoad.height / 2 +30);
+        ctx.fillStyle = "#00ffcc";
+        ctx.fillText("Best Record: " + highScore, mapRoad.width / 2, mapRoad.height / 2 + 70);
 
         ctx.fillStyle = "white";
-        ctx.fillText("Click to Restart", canvas.width / 2, canvas.height / 2 + 130);
+        ctx.fillText("Click to Restart", mapRoad.width / 2, mapRoad.height / 2 + 130);
         return;
     }
     ctx.restore();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(gaminglogic);
 }
-gameLoop();
+gaminglogic();
 
-window.addEventListener("mousedown", (event) =>{
+window.addEventListener("mousedown", (e) =>{
 
-    if (efficiency <= 0){
-        efficiency = 100;
-        livesSaved = 0;
-        cars = [];
+    if (Suitable_for_Ambulance <= 0){
+        Suitable_for_Ambulance = 100;
+        peoplereachedhospital = 0;
+        peoples = [];
         lights.forEach(l => l.state = "green");
-        gameLoop();
+        gaminglogic();
         return;
     }
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const rect = mapRoad.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
 
     lights.forEach(light =>{
         const dist= Math.hypot(mouseX - light.x, mouseY - light.y);
