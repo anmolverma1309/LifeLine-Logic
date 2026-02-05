@@ -7,7 +7,7 @@ let shakingEffect = 0;
 let peoplereachedhospital = 0;
 
 const breadth = 80;
-const gridSpacing = 250;
+const spect = 250;
 
 
 
@@ -106,12 +106,12 @@ class people{
             });
         }
 
-        peoples.forEach(otherCar => {
-            if (this === otherCar) return;
+        peoples.forEach(othertraffic => {
+            if (this === othertraffic) return;
 
-            if (this.lane === otherCar.lane){
-                const dist = (this.lane === "horizontal") ? (otherCar.x - this.x) : (otherCar.y - this.y);
-                const onSameRoad = (this.lane ===  "horizontal") ? (this.y === otherCar.y) : (this.x === otherCar.x);
+            if (this.lane === othertraffic.lane){
+                const dist = (this.lane === "horizontal") ? (othertraffic.x - this.x) : (othertraffic.y - this.y);
+                const onSameRoad = (this.lane ===  "horizontal") ? (this.y === othertraffic.y) : (this.x === othertraffic.x);
                 if (onSameRoad && dist > 0 && dist < 45){
                     shouldStop = true;
                 }
@@ -140,8 +140,8 @@ class people{
 let lights = [];
 function setupLights(){
     lights = [];
-    for (let x = gridSpacing/2; x <mapRoad.width; x += gridSpacing){
-        for (let y = gridSpacing/2; y < mapRoad.height; y += gridSpacing){
+    for (let x = spect/2; x <mapRoad.width; x += spect){
+        for (let y = spect/2; y < mapRoad.height; y += spect){
             lights.push (new lightings(x,y));
         }
     }
@@ -153,11 +153,11 @@ function spawnCar(){
    const isAmbulance = Math.random() < 0.2;
    const type = isAmbulance ? "ambulance" : "civilian";
    if (Math.random() > 0.5){
-    let randomY = (Math.floor(Math.random() * (mapRoad.height / gridSpacing)))* gridSpacing + gridSpacing/2;
+    let randomY = (Math.floor(Math.random() * (mapRoad.height / spect)))* spect + spect/2;
     peoples.push(new people(0, randomY, "horizontal", type));
 
    }else{
-    let randomX = (Math.floor(Math.random() * (mapRoad.width / gridSpacing))) * gridSpacing + gridSpacing/2;
+    let randomX = (Math.floor(Math.random() * (mapRoad.width / spect))) * spect + spect/2;
     peoples.push (new people (randomX, 0 , "vertical", type));
    }
 }
@@ -186,12 +186,12 @@ function drawCity(){
 
     ctx.fillStyle = "#2a2a2a";
 
-    for (let y = gridSpacing/2; y < mapRoad.height; y += gridSpacing){
+    for (let y = spect/2; y < mapRoad.height; y += spect){
         ctx.fillRect(0, y - breadth/2, mapRoad.width, breadth);
     }
 
     
-    for (let x = gridSpacing/2; x < mapRoad.width; x += gridSpacing){
+    for (let x = spect/2; x < mapRoad.width; x += spect){
         ctx.fillRect(x - breadth/2, 0, breadth, mapRoad.height);
     }
     ctx.restore();
@@ -207,7 +207,7 @@ function gaminglogic(){
     }
     drawCity();
 
-    const ambulancePresent = peoples.some(car => car.type === "ambulance");
+    const ambulancePresent = peoples.some(traffic => traffic.type === "ambulance");
     if (ambulancePresent){
         ctx.strokeStyle = "rgba(255, 0, 0, 0.4)";
         ctx.lineWidth = 20;
@@ -218,31 +218,31 @@ function gaminglogic(){
 
     let stoppedCount = 0;
 
-    peoples.forEach((car) => {
-        car.move();
-        car.draw();
+    peoples.forEach((traffic) => {
+        traffic.move();
+        traffic.draw();
 
 
-        peoples.forEach((otherCar) =>{
-            if (car !== otherCar && car.lane !== otherCar.lane){
-                const dist = Math.hypot(car.x - otherCar.x, car.y - otherCar.y);
+        peoples.forEach((othertraffic) =>{
+            if (traffic !== othertraffic && traffic.lane !== othertraffic.lane){
+                const dist = Math.hypot(traffic.x - othertraffic.x, traffic.y - othertraffic.y);
                 if (dist < 30){
                     Suitable_for_Ambulance -= 0.5;
-                    car.color = "#ff8800"; 
-                    car.speed = 1;     
+                    traffic.color = "#ff8800"; 
+                    traffic.speed = 1;     
                     shakingEffect = 10;  
                 }
             }
         });
         
-        if (car.waitingTime > 0 && car.type !== "ambulance"){
+        if (traffic.waitingTime > 0 && traffic.type !== "ambulance"){
             stoppedCount++;
         }
     });
 
-    peoples = peoples.filter(car => {
-        const offScreen = car.x > mapRoad.width + 50 || car.x < -50 || car.y > mapRoad.height + 50 || car.y < -50;
-        if (offScreen && car.type === "ambulance") peoplereachedhospital++;
+    peoples = peoples.filter(traffic => {
+        const offScreen = traffic.x > mapRoad.width + 50 || traffic.x < -50 || traffic.y > mapRoad.height + 50 || traffic.y < -50;
+        if (offScreen && traffic.type === "ambulance") peoplereachedhospital++;
         return !offScreen;
     });
 
@@ -309,3 +309,4 @@ window.addEventListener("mousedown", (e) =>{
         }
     });
 });
+
