@@ -1,0 +1,28 @@
+body{
+    margin: 0;
+    padding: 0;
+    background-color: #0a0a0a;
+    color: #00ffcc;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    
+}
+
+#ui-layer{
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.stats{
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-left: 3px solid #00ffcc;
+    letter-spacing: 2px;
+}
+
+canvas{
+    display: block;
+}  
