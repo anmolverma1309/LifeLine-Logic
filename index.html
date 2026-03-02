@@ -51,6 +51,111 @@ let Suitable_for_Ambulance = 100;
 let shakingEffect = 0;
 let peoplereachedhospital = 0;
 
+// track next threshold for 10% drops
+let nextBeepThreshold = 90;
+
+// global audio context reused for all sounds
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+let sharedAudioContext = null;
+
+function ensureContext() {
+    if (!sharedAudioContext) {
+        sharedAudioContext = new AudioContextClass();
+    }
+    if (sharedAudioContext.state === 'suspended') {
+        sharedAudioContext.resume().catch(() => {});
+    }
+    return sharedAudioContext;
+}
+
+// simple beep using Web Audio API
+function playBeep() {
+    try {
+        const ctxAudio = ensureContext();
+        const oscillator = ctxAudio.createOscillator();
+        const gainNode = ctxAudio.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctxAudio.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 440; // A4
+        gainNode.gain.setValueAtTime(0.1, ctxAudio.currentTime);
+        oscillator.start();
+        oscillator.stop(ctxAudio.currentTime + 0.1);
+    } catch (e) {
+        console.warn('beep failed', e);
+    }
+}
+
+// atmospheric background music with a low rumble and crowd noise
+function startMusic() {
+    try {
+        const ctxAudio = ensureContext();
+        // avoid creating multiple music instances
+        if (startMusic.started) return;
+        startMusic.started = true;
+
+        // low rumble oscillators simulate 'beneath the surface'
+        const rumble = ctxAudio.createOscillator();
+        const rumbleGain = ctxAudio.createGain();
+        rumble.type = 'sine';
+        rumble.frequency.value = 55; // low bass
+        rumbleGain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
+        rumble.connect(rumbleGain).connect(ctxAudio.destination);
+        rumble.start();
+
+        // subtle evolving pad
+        const pad = ctxAudio.createOscillator();
+        const padGain = ctxAudio.createGain();
+        pad.type = 'triangle';
+        pad.frequency.value = 110;
+        padGain.gain.setValueAtTime(0.02, ctxAudio.currentTime);
+        pad.connect(padGain).connect(ctxAudio.destination);
+        pad.start();
+
+        // crowd/traffic noise: white noise filtered
+        const bufferSize = 2 * ctxAudio.sampleRate;
+        const noiseBuffer = ctxAudio.createBuffer(1, bufferSize, ctxAudio.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        const whiteNoise = ctxAudio.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+        const noiseFilter = ctxAudio.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 1000;
+        noiseFilter.Q.value = 0.5;
+        const noiseGain = ctxAudio.createGain();
+        noiseGain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
+        whiteNoise.connect(noiseFilter).connect(noiseGain).connect(ctxAudio.destination);
+        whiteNoise.start();
+
+        // slight movement on rumble
+        setInterval(() => {
+            rumble.frequency.value = 50 + Math.random() * 10;
+        }, 2000);
+
+    } catch (e) {
+        console.warn('music failed', e);
+    }
+}
+
+// start music on first user interaction to satisfy autoplay rules
+function initAudio(e) {
+    console.log('initAudio fired', e.type);
+    ensureContext().resume().catch(() => {});
+    startMusic();
+    // remove all listeners once done
+    window.removeEventListener('mousedown', initAudio);
+    document.removeEventListener('click', initAudio);
+    mapRoad.removeEventListener('mousedown', initAudio);
+}
+// listen on multiple targets in case events don't bubble as expected
+window.addEventListener('mousedown', initAudio);
+document.addEventListener('click', initAudio);
+mapRoad.addEventListener('mousedown', initAudio);
+
 const breadth = 80;
 const spect = 250;
 
@@ -303,6 +408,12 @@ function gaminglogic(){
     document.getElementById("score").innerText = Math.floor(Suitable_for_Ambulance) + "%";
     document.getElementById("timer").innerText = peoplereachedhospital;
 
+    // beep if we've dropped past the next 10% threshold(s)
+    while (Suitable_for_Ambulance <= nextBeepThreshold && nextBeepThreshold >= 0) {
+        playBeep();
+        nextBeepThreshold = Math.max(0, nextBeepThreshold - 10);
+    }
+
     if (Suitable_for_Ambulance <= 0){
         ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
         ctx.fillRect(0, 0, mapRoad.width, mapRoad.height);
@@ -339,6 +450,8 @@ window.addEventListener("mousedown", (e) =>{
         peoplereachedhospital = 0;
         peoples = [];
         lights.forEach(l => l.state = "green");
+        // reset beep thresholds so we start again from 90%
+        nextBeepThreshold = 90;
         gaminglogic();
         return;
     }

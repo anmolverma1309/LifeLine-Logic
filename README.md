@@ -18,5 +18,6 @@ A fast-paced traffic management simulation where every second counts. Balance ci
 - **JavaScript (Vanilla)** - Pure logic, no bulky frameworks.
 - **CSS3** - Custom animations and styling.
 
+
 ---
 *Created by [Anmol Verma](https://github.com/anmolverma1309)*
