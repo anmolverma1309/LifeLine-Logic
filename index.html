@@ -112,7 +112,6 @@ function startMusic() {
         pad.connect(padGain).connect(ctxAudio.destination);
         pad.start();
 
-        // crowd/traffic noise: white noise filtered
         const bufferSize = 2 * ctxAudio.sampleRate;
         const noiseBuffer = ctxAudio.createBuffer(1, bufferSize, ctxAudio.sampleRate);
         const output = noiseBuffer.getChannelData(0);
