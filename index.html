@@ -140,7 +140,6 @@ function startMusic() {
     }
 }
 
-// start music on first user interaction to satisfy autoplay rules
 function initAudio(e) {
     console.log('initAudio fired', e.type);
     ensureContext().resume().catch(() => {});
