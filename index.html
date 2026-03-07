@@ -144,7 +144,6 @@ function initAudio(e) {
     console.log('initAudio fired', e.type);
     ensureContext().resume().catch(() => {});
     startMusic();
-    // remove all listeners once done
     window.removeEventListener('mousedown', initAudio);
     document.removeEventListener('click', initAudio);
     mapRoad.removeEventListener('mousedown', initAudio);
