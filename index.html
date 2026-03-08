@@ -130,7 +130,6 @@ function startMusic() {
         whiteNoise.connect(noiseFilter).connect(noiseGain).connect(ctxAudio.destination);
         whiteNoise.start();
 
-        // slight movement on rumble
         setInterval(() => {
             rumble.frequency.value = 50 + Math.random() * 10;
         }, 2000);
