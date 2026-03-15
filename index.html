@@ -236,7 +236,7 @@ class people{
 
     move(){
         let shouldStop = false;
-        if (this.type !== "ambulance"){ //////////
+        if (this.type !== "ambulance"){ 
             lights.forEach(light => {
                 if (light.state === "red"){
                     const dist = (this.lane === "horizontal") ? (light.x - this.x) : (light.y - this.y);
@@ -401,7 +401,6 @@ function gaminglogic(){
     document.getElementById("score").innerText = Math.floor(Suitable_for_Ambulance) + "%";
     document.getElementById("timer").innerText = peoplereachedhospital;
 
-    // beep if we've dropped past the next 10% threshold(s)
     while (Suitable_for_Ambulance <= nextBeepThreshold && nextBeepThreshold >= 0) {
         playBeep();
         nextBeepThreshold = Math.max(0, nextBeepThreshold - 10);
@@ -443,7 +442,6 @@ window.addEventListener("mousedown", (e) =>{
         peoplereachedhospital = 0;
         peoples = [];
         lights.forEach(l => l.state = "green");
-        // reset beep thresholds so we start again from 90%
         nextBeepThreshold = 90;
         gaminglogic();
         return;
