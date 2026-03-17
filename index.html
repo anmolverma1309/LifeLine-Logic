@@ -202,7 +202,7 @@ class people{
         }
         ctx.fillRect(this.x - 15 + shakeX, this.y - 10 + shakeY, 30, 20);
         ctx.fillStyle = this.color;
-        if(this.type === "ambulance"){                ////////////////////
+        if(this.type === "ambulance"){               
             let pulse = Math.sin(Date.now() / 100) > 0 ? "#ff0000" : "#0000ff";
             ctx.shadowBlur = 15;
             ctx.shadowColor = pulse;
