@@ -185,7 +185,7 @@ class people{
         this.type = type;
         let speedMultiplier = 1 + (peoplereachedhospital * 0.02);
 
-        this.speed = (type === "ambulance" ? 3.5 : 2.2) * speedMultiplier;  //////////
+        this.speed = (type === "ambulance" ? 3.5 : 2.2) * speedMultiplier;  
         this.speed = Math.min (this.speed, 6);
         this.baseColor = type === "ambulance" ? "#ff0000" : "#55aaff"; //////////
         this.color = this.baseColor
