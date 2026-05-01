@@ -1,0 +1,34 @@
+name: Daily Code Update
+
+on:
+  schedule:
+    - cron: "30 4 * * *"   # 10 AM IST
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update code
+        run: |
+          FILE="chatbot.py"
+
+          # update version
+          VERSION=$(grep "version =" $FILE | awk '{print $4}')
+          NEW_VERSION=$((VERSION + 1))
+          sed -i "s/version = $VERSION/version = $NEW_VERSION/" $FILE
+
+          # update date
+          TODAY=$(date +"%Y-%m-%d")
+          sed -i "s/last_modified = .*/last_modified = $TODAY/" $FILE
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "Anmol Verma"
+          git config --global user.email "your-email@example.com"
+          git add .
+          git commit -m "chore: auto update"
+          git push
